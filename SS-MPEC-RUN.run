@@ -1,0 +1,138 @@
+#include SS-MPEC-RUN.run;
+reset;
+#cd "C:\Users\Hajime\Dropbox\Hajime\SS progress\10. MPEC estimation and data\10-3-Monopoly-Mutiple-PuPl";
+#option ampl_include "C:\Users\Hajime\Dropbox\Hajime\SS progress\10. MPEC estimation and data\10-3-Monopoly-Mutiple-PuPl";
+option log_file "log.txt";
+display ctime();
+#option solver knitroampl;
+option solver knitro;
+option knitro_options "  maxit=1000 scale=1  outlev=2 presolve=0";
+
+#----1. Estimate the demand model------------------------------------------------------------
+model SS-MPEC-DemandSide.mod;
+
+#-------1.1 Solve-------
+solve;
+
+display AlphaP;
+display AlphaAge;
+display AlphaAgeSq;
+display Sigma_a0, Sigma_ap;
+#display AlphaMonth;
+display (sum{t in TIME:(t mod 12)=1}AlphaTime[t])/(card({t in TIME:(t mod 12)=1}));
+display (sum{t in TIME:(t mod 12)=2}AlphaTime[t])/(card({t in TIME:(t mod 12)=2}));
+display (sum{t in TIME:(t mod 12)=11}AlphaTime[t])/(card({t in TIME:(t mod 12)=11}));
+display (sum{t in TIME:(t mod 12)=0}AlphaTime[t])/(card({t in TIME:(t mod 12)=0}));
+
+#-------1.2 Save and fix estimates------
+cd AboveTwoYear_U5K_All;
+
+display Share_i,Share>"DemandEst_Share_170611_PregAgeMonth.dat";
+display Delta_i,Delta ,EDelta_next_i>"DemandEst_Delta_170611_PregAgeMonth.dat";
+display M_i_scaled,M_scaled>"DemandEst_M_170611_PregAgeMonth.dat";
+display Xi>"DemandEst_Xi_170611_PregAgeMonth.dat";
+#display AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaMonth, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170611_PregAgeMonth.dat";
+display AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaTime, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170611_PregAgeMonth.dat";
+#display Sigma_a0,Sigma_ap,Gamma_EW,Coeff_AR1_price>"DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat";
+display Sigma_a0,Sigma_ap,Gamma_EW>"DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat";
+display EWnext_i>"DemandEst_EW_170611_PregAgeMonth.dat";
+#display Error_AR1_price,Rho_d>"ErrorAR1Rho_170611_PregAgeMonth.dat";
+display Rho_d>"ErrorAR1Rho_170611_PregAgeMonth.dat";
+display N_CONS,beta,N_KW,scale_M>"DemandSetting_170611_PregAgeMonth.txt";
+display ctime()>"EstDate.txt";
+display ctime();
+#table OutputTestTable OUT "tableproxy" "odbc" "OutputTest.xls" "OutputTestTable":
+#[PROD],Alpha0;
+#write table OutputTestTable;
+cd ..;
+
+
+
+#1.2 Fix the demand estimates
+##1.2.1 Delete the demand model once
+purge Share_i, Share, Delta_i, Delta, EDelta_next_i, M_i_scaled,M_scaled,Xi;
+purge AlphaP,AlphaP_i,Alpha0,Alpha0_ij,AlphaAge,AlphaAgeSq,AlphaMonth,AlphaHoming,AlphaGenre;
+purge Sigma_a0, Sigma_ap;
+purge EWnext_i, Gamma_EW;
+purge Coeff_AR1_price,Error_AR1_price;
+purge Rho_d;
+##1.2.2 Redefine demand variables as parameters
+param Share_i {i in CONS, (j,t) in OBS};
+param Share {(j,t) in OBS} ;
+#param Demand_scaled {(j,t) in OBS} ;
+param Delta_i {i in CONS, (j,t) in OBS};
+param Delta {(j,t) in OBS};
+param EDelta_next_i {i in CONS, (j,t) in OBS};
+param M_i_scaled {i in CONS, (j,t) in OBS} ;
+param M_scaled{(j,t) in OBS};
+param Xi {(j,t) in OBS} ;
+##Model estimates
+###Demand parameter
+param AlphaP;
+param AlphaP_i {CONS};
+param Alpha0 {j in PROD};
+param Alpha0_ij {CONS,PROD};
+param AlphaAge;
+param AlphaAgeSq;
+param AlphaMonth {MONTH};
+param AlphaHoming {HOMING};
+param AlphaGenre {GENRE};
+param Sigma_a0 ;
+param Sigma_ap ;
+###Value function approximation
+####Polynomial version
+param EWnext_i {i in CONS, (j,t) in OBS};
+param Gamma_EW {CONS,K_EW};
+##AR1 Process
+#param Coeff_AR1_price;
+#param Error_AR1_price {(j,t) in OBS:t>=1};
+param Coeff_AR1_price_price;
+param Coeff_AR1_price_age;
+param Coeff_AR1_price_month {MONTH};
+
+##EL variables
+#param Rho_d {(j,t) in OBS:t>=2};
+
+
+
+##1.2.3 Read the demand estimate results
+##NOTE: Need to modify the outputs (add "param" and ";") to be readable.
+cd AboveTwoYear_U5K_All;
+data PregAgeMonth_all.dat;
+data DemandEst_Alpha_170611_PregAgeMonth.dat;
+data DemandEst_Delta_170611_PregAgeMonth.dat;
+data DemandEst_EW_170611_PregAgeMonth.dat;
+data DemandEst_M_170611_PregAgeMonth.dat;
+data DemandEst_Share_170611_PregAgeMonth.dat;
+data DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat;
+data DemandEst_Xi_170611_PregAgeMonth.dat;
+cd ..;
+
+
+
+#------2. Estimate Supply model---------------------------------------------------------------
+
+#-------2.1 Solve----------
+#display ctime();
+model SS-MPEC-SupplySide.mod;
+option knitro_options "  maxit=1000 scale=1  outlev=2 presolve=0";
+
+
+
+solve;
+display AlphaCost0;
+#display AlphaCostTime;
+display AlphaCostHome_num;
+#display AlphaCostPub;
+display AlphaCostAlpha0;
+/*
+#-------2.2 Save estimates------
+cd AboveTwoYear_U5K_All;
+display MC,Lambda>"SupplyEst_MCLambda_170611_PregAgeMonth.txt";
+display AlphaCost0,AlphaCostPubHom,AlphaCostGenre>"SupplyEst_Alpha_170611_PregAgeMonth.txt";
+display dDdp,dDdp_i,dEVnextdp,dEWnextdp_i,Gamma_dVdp,Rho_s>"SupplyEst_dDdEVdEWGammaRho_170611_PregAgeMonth.txt";
+
+
+display ctime();
+cd ..;
+*/
