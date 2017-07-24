@@ -27,18 +27,18 @@ display (sum{t in TIME:(t mod 12)=0}AlphaTime[t])/(card({t in TIME:(t mod 12)=0}
 #-------1.2 Save and fix estimates------
 cd AboveTwoYear_U5K_All;
 
-display Share_i,Share>"DemandEst_Share_170611_PregAgeMonth.dat";
-display Delta_i,Delta ,EDelta_next_i>"DemandEst_Delta_170611_PregAgeMonth.dat";
-display M_i_scaled,M_scaled>"DemandEst_M_170611_PregAgeMonth.dat";
-display Xi>"DemandEst_Xi_170611_PregAgeMonth.dat";
+display Share_i,Share>"DemandEst_Share_170723_NE.dat";
+display Delta_i,Delta ,EDelta_next_i>"DemandEst_Delta_170723_NE.dat";
+display M_i_scaled,M_scaled>"DemandEst_M_170723_NE.dat";
+display Xi>"DemandEst_Xi_170723_NE.dat";
 #display AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaMonth, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170611_PregAgeMonth.dat";
-display AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaTime, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170611_PregAgeMonth.dat";
-#display Sigma_a0,Sigma_ap,Gamma_EW,Coeff_AR1_price>"DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat";
-display Sigma_a0,Sigma_ap,Gamma_EW>"DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat";
-display EWnext_i>"DemandEst_EW_170611_PregAgeMonth.dat";
-#display Error_AR1_price,Rho_d>"ErrorAR1Rho_170611_PregAgeMonth.dat";
-display Rho_d>"ErrorAR1Rho_170611_PregAgeMonth.dat";
-display N_CONS,beta,N_KW,scale_M>"DemandSetting_170611_PregAgeMonth.txt";
+display AlphaNE, AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaTime, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170723_NE.dat";
+#display Sigma_a0,Sigma_ap,Gamma_EW,Coeff_AR1_price>"DemandEst_SigmaGammaCoeffAR1_170723_NE.dat";
+display Sigma_a0,Sigma_ap,Gamma_EW>"DemandEst_SigmaGammaCoeffAR1_170723_NE.dat";
+display EWnext_i>"DemandEst_EW_170723_NE.dat";
+#display Error_AR1_price,Rho_d>"ErrorAR1Rho_170723_NE.dat";
+display Rho_d>"ErrorAR1Rho_170723_NE.dat";
+display N_CONS,beta,N_KW,scale_M>"DemandSetting_170723_NE.txt";
 display ctime()>"EstDate.txt";
 display ctime();
 #table OutputTestTable OUT "tableproxy" "odbc" "OutputTest.xls" "OutputTestTable":
@@ -69,6 +69,7 @@ param Xi {(j,t) in OBS} ;
 ##Model estimates
 ###Demand parameter
 param AlphaP;
+param AlphaNE
 param AlphaP_i {CONS};
 param Alpha0 {j in PROD};
 param Alpha0_ij {CONS,PROD};
@@ -99,17 +100,17 @@ param Coeff_AR1_price_month {MONTH};
 ##NOTE: Need to modify the outputs (add "param" and ";") to be readable.
 cd AboveTwoYear_U5K_All;
 data PregAgeMonth_all.dat;
-data DemandEst_Alpha_170611_PregAgeMonth.dat;
-data DemandEst_Delta_170611_PregAgeMonth.dat;
-data DemandEst_EW_170611_PregAgeMonth.dat;
-data DemandEst_M_170611_PregAgeMonth.dat;
-data DemandEst_Share_170611_PregAgeMonth.dat;
-data DemandEst_SigmaGammaCoeffAR1_170611_PregAgeMonth.dat;
-data DemandEst_Xi_170611_PregAgeMonth.dat;
+data DemandEst_Alpha_170723_NE.dat;
+data DemandEst_Delta_170723_NE.dat;
+data DemandEst_EW_170723_NE.dat;
+data DemandEst_M_170723_NE.dat;
+data DemandEst_Share_170723_NE.dat;
+data DemandEst_SigmaGammaCoeffAR1_170723_NE.dat;
+data DemandEst_Xi_170723_NE.dat;
 cd ..;
 
 
-
+/*
 #------2. Estimate Supply model---------------------------------------------------------------
 
 #-------2.1 Solve----------
@@ -125,14 +126,14 @@ display AlphaCost0;
 display AlphaCostHome_num;
 #display AlphaCostPub;
 display AlphaCostAlpha0;
-/*
+
 #-------2.2 Save estimates------
 cd AboveTwoYear_U5K_All;
-display MC,Lambda>"SupplyEst_MCLambda_170611_PregAgeMonth.txt";
-display AlphaCost0,AlphaCostPubHom,AlphaCostGenre>"SupplyEst_Alpha_170611_PregAgeMonth.txt";
-display dDdp,dDdp_i,dEVnextdp,dEWnextdp_i,Gamma_dVdp,Rho_s>"SupplyEst_dDdEVdEWGammaRho_170611_PregAgeMonth.txt";
-
+display MC,Lambda>"SupplyEst_MCLambda_170723_NE.txt";
+display AlphaCost0,AlphaCostPubHom,AlphaCostGenre>"SupplyEst_Alpha_170723_NE.txt";
+display dDdp,dDdp_i,dEVnextdp,dEWnextdp_i,Gamma_dVdp,Rho_s>"SupplyEst_dDdEVdEWGammaRho_170723_NE.txt";
 
 display ctime();
 cd ..;
+
 */
