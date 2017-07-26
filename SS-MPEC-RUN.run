@@ -8,15 +8,17 @@ display ctime();
 option solver knitro;
 option knitro_options "  maxit=1000 scale=1  outlev=2 presolve=0";
 
+
 #----1. Estimate the demand model------------------------------------------------------------
 model SS-MPEC-DemandSide.mod;
-
+/*
 #-------1.1 Solve-------
 solve;
 
 display AlphaP;
 display AlphaAge;
 display AlphaAgeSq;
+display AlphaNE;
 display Sigma_a0, Sigma_ap;
 #display AlphaMonth;
 display (sum{t in TIME:(t mod 12)=1}AlphaTime[t])/(card({t in TIME:(t mod 12)=1}));
@@ -27,35 +29,38 @@ display (sum{t in TIME:(t mod 12)=0}AlphaTime[t])/(card({t in TIME:(t mod 12)=0}
 #-------1.2 Save and fix estimates------
 cd AboveTwoYear_U5K_All;
 
-display Share_i,Share>"DemandEst_Share_170723_NE.dat";
-display Delta_i,Delta ,EDelta_next_i>"DemandEst_Delta_170723_NE.dat";
-display M_i_scaled,M_scaled>"DemandEst_M_170723_NE.dat";
-display Xi>"DemandEst_Xi_170723_NE.dat";
+display Share_i,Share>"DemandEst_Share_170725.dat";
+display Delta_i,Delta ,EDelta_next_i>"DemandEst_Delta_170725.dat";
+display M_i_scaled,M_scaled>"DemandEst_M_170725.dat";
+display Xi>"DemandEst_Xi_170725.dat";
 #display AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaMonth, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170611_PregAgeMonth.dat";
-display AlphaNE, AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaTime, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170723_NE.dat";
+display AlphaNE, AlphaP, AlphaP_i, AlphaAge, Alpha0, Alpha0_ij, AlphaTime, AlphaAgeSq, AlphaHoming>"DemandEst_Alpha_170725.dat";
 #display Sigma_a0,Sigma_ap,Gamma_EW,Coeff_AR1_price>"DemandEst_SigmaGammaCoeffAR1_170723_NE.dat";
-display Sigma_a0,Sigma_ap,Gamma_EW>"DemandEst_SigmaGammaCoeffAR1_170723_NE.dat";
-display EWnext_i>"DemandEst_EW_170723_NE.dat";
+display Sigma_a0,Sigma_ap,Gamma_EW>"DemandEst_SigmaGammaCoeffAR1_170725.dat";
+display EWnext_i>"DemandEst_EW_170725.dat";
 #display Error_AR1_price,Rho_d>"ErrorAR1Rho_170723_NE.dat";
-display Rho_d>"ErrorAR1Rho_170723_NE.dat";
-display N_CONS,beta,N_KW,scale_M>"DemandSetting_170723_NE.txt";
+display Rho_d>"ErrorAR1Rho_170725.dat";
+display N_CONS,beta,N_KW,scale_M>"DemandSetting_170725.txt";
 display ctime()>"EstDate.txt";
 display ctime();
 #table OutputTestTable OUT "tableproxy" "odbc" "OutputTest.xls" "OutputTestTable":
 #[PROD],Alpha0;
 #write table OutputTestTable;
 cd ..;
-
+*/
 
 
 #1.2 Fix the demand estimates
 ##1.2.1 Delete the demand model once
 purge Share_i, Share, Delta_i, Delta, EDelta_next_i, M_i_scaled,M_scaled,Xi;
-purge AlphaP,AlphaP_i,Alpha0,Alpha0_ij,AlphaAge,AlphaAgeSq,AlphaMonth,AlphaHoming,AlphaGenre;
+purge AlphaNE,AlphaP,AlphaP_i,Alpha0,Alpha0_ij,AlphaAge,AlphaAgeSq,AlphaMonth,AlphaHoming,AlphaGenre;
 purge Sigma_a0, Sigma_ap;
 purge EWnext_i, Gamma_EW;
 purge Coeff_AR1_price,Error_AR1_price;
 purge Rho_d;
+
+
+
 ##1.2.2 Redefine demand variables as parameters
 param Share_i {i in CONS, (j,t) in OBS};
 param Share {(j,t) in OBS} ;
@@ -69,7 +74,7 @@ param Xi {(j,t) in OBS} ;
 ##Model estimates
 ###Demand parameter
 param AlphaP;
-param AlphaNE
+param AlphaNE;
 param AlphaP_i {CONS};
 param Alpha0 {j in PROD};
 param Alpha0_ij {CONS,PROD};
@@ -100,25 +105,21 @@ param Coeff_AR1_price_month {MONTH};
 ##NOTE: Need to modify the outputs (add "param" and ";") to be readable.
 cd AboveTwoYear_U5K_All;
 data PregAgeMonth_all.dat;
-data DemandEst_Alpha_170723_NE.dat;
-data DemandEst_Delta_170723_NE.dat;
-data DemandEst_EW_170723_NE.dat;
-data DemandEst_M_170723_NE.dat;
-data DemandEst_Share_170723_NE.dat;
-data DemandEst_SigmaGammaCoeffAR1_170723_NE.dat;
-data DemandEst_Xi_170723_NE.dat;
+data DemandEst_Alpha_170725.dat;
+data DemandEst_Delta_170725.dat;
+data DemandEst_EW_170725.dat;
+data DemandEst_M_170725.dat;
+data DemandEst_Share_170725.dat;
+data DemandEst_SigmaGammaCoeffAR1_170725.dat;
+data DemandEst_Xi_170725.dat;
 cd ..;
 
 
-/*
 #------2. Estimate Supply model---------------------------------------------------------------
-
 #-------2.1 Solve----------
 #display ctime();
 model SS-MPEC-SupplySide.mod;
 option knitro_options "  maxit=1000 scale=1  outlev=2 presolve=0";
-
-
 
 solve;
 display AlphaCost0;
@@ -135,5 +136,3 @@ display dDdp,dDdp_i,dEVnextdp,dEWnextdp_i,Gamma_dVdp,Rho_s>"SupplyEst_dDdEVdEWGa
 
 display ctime();
 cd ..;
-
-*/

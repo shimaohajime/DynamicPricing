@@ -20,7 +20,6 @@ param time_min = min({(j,t) in OBS} time[j,t]);
 param time_max = max({(j,t) in OBS} time[j,t]);
 set TIME=time_min..time_max+1;
 
-
 set MONTH=1..12;
 set GENRE=1..14;
 set MULTIHOMING=1..3;
@@ -107,7 +106,7 @@ var AlphaAgeSq<=50;
 var AlphaHoming {HOMING}<=50;
 var AlphaGenre {GENRE}<=50;
 var AlphaTime {TIME}<=50.;
-var AlphaNE;
+var AlphaNE :=0;
 var Sigma_a0 :=1.;
 var Sigma_ap :=1.;
 ###Value function approximation
@@ -181,14 +180,21 @@ s.t. MarketSizeAggregate {(j,t) in OBS}: M_scaled[j,t] = sum{i in CONS} M_i_scal
 #s.t. priceAR1 {(j,t) in OBS:t>=1}: price[j,t] = Coeff_AR1_price*price[j,t-1] + Error_AR1_price[j,t];
 #s.t. priceAR1Reg: Coeff_AR1_price =  (sum {(j,t) in OBS:t>=1}(price[j,t]*price[j,t-1])) / (sum {(j,t) in OBS:t>=1}(price[j,t-1]^2)) ;
 
-#s.t. UtilityReg_AgeSq_NoHoming_RC0p_i {i in CONS,(j,t) in OBS}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaMonth[month[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
-#s.t. UtilityReg_AgeSq_NoHoming_RC0p_i {i in CONS,(j,t) in OBS}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
-s.t. UtilityReg_NE_AgeSq_NoHoming_RC0p_i_release {i in CONS,(j,t) in OBS:age[j,t]=0}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
-s.t. UtilityReg_NE_AgeSq_NoHoming_RC0p_i {i in CONS,(j,t) in OBS:age[j,t]>0}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaNE*unit[j,t-1]+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+#s.t. UReg_AgeSq_NoHom_MonthFE_RC0p_i {i in CONS,(j,t) in OBS}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaMonth[month[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+s.t. UReg_AgeSq_NoHom_TimeFE_RC0p_i {i in CONS,(j,t) in OBS}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+/*Network Effect
+s.t. UReg_NE_AgeSq_NoHoming_RC0p_i_release {i in CONS,(j,t) in OBS:age[j,t]=0}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+s.t. UReg_NE_AgeSq_NoHoming_RC0p_i_1 {i in CONS,(j,t) in OBS:age[j,t]=1}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaNE*unit[j,t-1]+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+s.t. UReg_NE_AgeSq_NoHoming_RC0p_i {i in CONS,(j,t) in OBS:age[j,t]>1}: Delta_i[i,j,t]= (Alpha0_ij[i,j])+(AlphaP_i[i]*price[j,t])+AlphaNE*unit[j,t-1]+AlphaTime[time[j,t]]+AlphaAge*age[j,t]+AlphaAgeSq*(age[j,t]**2)+AlphaGenre[genre[j]]  +Xi[j,t];
+*/
 
 /*Standard*/
-#s.t. ConsPred_EDelta_i_AgeSq_iidXiAR1price {i in CONS,(j,t) in OBS}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] - (  AlphaP_i[i]*price[j,t]*(1-Coeff_AR1_price)  ) + (  AlphaMonth[(month[j,t] mod 12)+1] - AlphaMonth[month[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
-s.t. ConsPred_EDelta_i_AgeSq_iidXiAR1price {i in CONS,(j,t) in OBS}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] + (  AlphaP_i[i]*(phat_next[j,t]-price[j,t])  ) + (  AlphaTime[time[j,t]+1] - AlphaTime[time[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
+#s.t. CPred_EDelta_i_AgeSq_MonthFE_iidXiAR1p {i in CONS,(j,t) in OBS}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] - (  AlphaP_i[i]*price[j,t]*(1-Coeff_AR1_price)  ) + (  AlphaMonth[(month[j,t] mod 12)+1] - AlphaMonth[month[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
+s.t. CPred_EDelta_i_AgeSq_TimeFE_iidXiAR1p {i in CONS,(j,t) in OBS}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] + (  AlphaP_i[i]*(phat_next[j,t]-price[j,t])  ) + (  AlphaTime[time[j,t]+1] - AlphaTime[time[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
+/*Network Effect
+s.t. ConsPred_EDelta_i_AgeSq_iidXiAR1price_NE_0 {i in CONS,(j,t) in OBS:age[j,t]=0}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] + AlphaNE*(unit[j,t]  ) + (  AlphaP_i[i]*(phat_next[j,t]-price[j,t])  ) + (  AlphaTime[time[j,t]+1] - AlphaTime[time[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
+s.t. ConsPred_EDelta_i_AgeSq_iidXiAR1price_NE {i in CONS,(j,t) in OBS:age[j,t]>0}: EDelta_next_i[i,j,t] = Delta_i[i,j,t] + AlphaNE*(unit[j,t]-unit[j,t-1]  ) + (  AlphaP_i[i]*(phat_next[j,t]-price[j,t])  ) + (  AlphaTime[time[j,t]+1] - AlphaTime[time[j,t]]  ) + AlphaAge + AlphaAgeSq*((age[j,t]+1)**2 - age[j,t]**2 );
+*/
 s.t. ConsPred_EW_EDelta_i_Poly {i in CONS,(j,t) in OBS}: EWnext_i[i,j,t]= sum{k in K_EW} Gamma_EW[i,k]*EDelta_next_i[i,j,t]^k;
 
 

@@ -3,9 +3,9 @@ set more off
 //set min_memory 3G
 
 use "C:\Users\Hajime\Dropbox\Hajime\SS progress\1. 151223 Videogame Cleaning All\NPD_data_working_FullFinalData.dta"
-cd "C:\Users\Hajime\Dropbox\Hajime\SS progress\10. MPEC estimation and data\10-3-Monopoly-Mutiple-PuPl\"
+cd "C:\Users\Hajime\Dropbox\Hajime\SS progress\10. MPEC estimation and data\DynamicPricing\"
 /*Select samples*/
-drop if Unit<5000 
+drop if Unit<2000 
 /*drop the first month of the platform
 drop if hwsales==marketsize
 */
@@ -71,10 +71,9 @@ replace flag_disappear = 1 if max_t<last_t
 bysort PROD: egen max_age = max(AGE)
 bysort PROD: egen min_age = min(AGE)
 
-
-drop if max_age<24
+drop if max_age<18
 drop if min_age!=0
-
+drop if AGE>=18
 /*balance the panel
 drop if AGE>=24
 */
@@ -94,7 +93,7 @@ label variable unit "Own Platform Hardware Sale (by unit_scale)"
 
 /*Create ALL data*/
 global fname="All"
-global folder="AboveTwoYear_U5K_$fname" 
+global folder="AboveOneHalfYear_U2K_Balanced_$fname" 
 //confirmdir "AboveTwoYear_U10K_$fname" 
 confirmdir $folder 
 if r(confirmdir)!="0"{

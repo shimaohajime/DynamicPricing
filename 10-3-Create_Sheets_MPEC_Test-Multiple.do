@@ -41,7 +41,7 @@ gen M = marketsize-L.cumunit
 replace M=marketsize if AGE==0
 
 /*predicted price*/
-/*coefficient for each product*/
+/*coefficient for each product
 gen pricesq = price*price
 reg price c.L.price##i.PROD c.L.AGE##i.PROD i.L.month
 //reg price c.L.price##i.PROD
@@ -51,6 +51,7 @@ gen phat_next_each = F.phat_each
 replace phat_each=-999 if phat_each==.
 //replace phat_next_each=-999 if phat_next_each==.
 drop if phat_next_each==.
+*/
 
 /*pooled regression for all the products*/
 reg price c.L.price c.L.AGE i.L.month
@@ -62,7 +63,8 @@ replace phat_all=-999 if phat_all==.
 //replace phat_next_all=-999 if phat_next_all==.
 drop if phat_next_all==.
 
-export excel PROD AGE Xi Lambda Delta dEVnextdp M unit price phat_next_each phat_next_all hwsales marketsize month year t prodage using "BaseData.xls", sheetreplace firstrow(variables)
+export excel PROD AGE Xi Lambda Delta dEVnextdp M unit price phat_next_all hwsales marketsize month year t prodage using "BaseData.xls", sheetreplace firstrow(variables)
+//export excel PROD AGE Xi Lambda Delta dEVnextdp M unit price phat_next_each phat_next_all hwsales marketsize month year t prodage using "BaseData.xls", sheetreplace firstrow(variables)
 //export excel PROD AGE using "ID_List.xls", sheetreplace firstrow(variables)
 //export excel beta_d1 beta_d_cons beta_d_age beta_s1 beta_s_cons using "LogitEst.xls", sheetreplace firstrow(variables)
 
